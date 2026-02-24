@@ -12,8 +12,11 @@ import '@solana/wallet-adapter-react-ui/styles.css';
 import { useMemo } from "react";
 
 
-export default function layout({ children }: { children: React.ReactNode }) {
-    const network = WalletAdapterNetwork.Devnet;
+import { NetworkProvider, useNetwork } from '@/context/NetworkContext';
+
+
+function SolanaProviders({ children }: { children: React.ReactNode }) {
+    const { network } = useNetwork();
 
     // You can also provide a custom RPC endpoint.
     const endpoint = useMemo(() => clusterApiUrl(network), [network]);
@@ -26,5 +29,15 @@ export default function layout({ children }: { children: React.ReactNode }) {
                 </WalletModalProvider>
             </WalletProvider>
         </ConnectionProvider>
+    );
+}
+
+export default function layout({ children }: { children: React.ReactNode }) {
+    return (
+        <NetworkProvider>
+            <SolanaProviders>
+                {children}
+            </SolanaProviders>
+        </NetworkProvider>
     )
 }

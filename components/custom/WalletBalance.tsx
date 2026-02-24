@@ -1,26 +1,35 @@
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { TrendingUp, TrendingDown, PieChart } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import { AlertCircle, PieChart, RefreshCw } from 'lucide-react'
+import { useEffect, useState } from 'react'
 
 const WalletBalance = ({ state = 'full' }: { state?: 'full' | 'empty' }) => {
     const isEmpty = state === 'empty';
     const wallet = useWallet();
     const { connection } = useConnection();
     const [balance, setBalance] = useState(0);
-    console.log(connection)
-    useEffect(() => {
-        const getBalance = async () => {
-            if (wallet.connected && wallet.publicKey) {
-                console.log(wallet.publicKey?.toBase58());
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState<string | null>(null);
+
+    const getBalance = async () => {
+        if (wallet.connected && wallet.publicKey) {
+            try {
+                setIsLoading(true);
+                setError(null);
                 const balance = await connection.getBalance(wallet.publicKey)
                 setBalance(balance / LAMPORTS_PER_SOL)
+            } catch (err) {
+                console.error('Error fetching balance:', err);
+                setError('Failed to fetch balance. Please try again.');
+            } finally {
+                setIsLoading(false);
             }
         }
+    }
 
+    useEffect(() => {
         getBalance()
-
-    }, [wallet.connected]);
+    }, [wallet.connected, wallet.publicKey, connection]);
 
 
     const portfolio = isEmpty ? {
@@ -50,14 +59,31 @@ const WalletBalance = ({ state = 'full' }: { state?: 'full' | 'empty' }) => {
 
                 <div className="flex flex-col xl:flex-row xl:items-end justify-between gap-6">
                     <div>
-                        <p className="text-slate-400 text-sm font-medium mb-2">Total Net Worth</p>
-                        <div className="flex flex-wrap items-center gap-3 md:gap-4">
-                            <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tighter">
-                                SOL {balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                            </span>
-
+                        <div className="flex items-center gap-2 mb-2">
+                            <p className="text-slate-400 text-sm font-medium">Total Net Worth</p>
+                            {isLoading && <RefreshCw className="w-3.5 h-3.5 text-primary animate-spin" />}
                         </div>
 
+                        <div className="flex flex-col gap-3">
+                            {error ? (
+                                <div className="flex items-center gap-3 text-rose-400 bg-rose-500/10 py-2 px-4 rounded-xl border border-rose-500/20 animate-in fade-in slide-in-from-left-2 duration-300">
+                                    <AlertCircle className="w-4 h-4 shrink-0" />
+                                    <span className="text-sm font-medium">{error}</span>
+                                    <button
+                                        onClick={() => getBalance()}
+                                        className="ml-2 text-xs font-bold uppercase tracking-wider bg-rose-500/20 hover:bg-rose-500/30 px-2 py-1 rounded-md transition-colors"
+                                    >
+                                        Retry
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex flex-wrap items-center gap-3 md:gap-4 transition-all duration-500">
+                                    <span className={`text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tighter ${isLoading ? 'opacity-50 blur-[1px]' : 'opacity-100'}`}>
+                                        SOL {balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                    </span>
+                                </div>
+                            )}
+                        </div>
                     </div>
                 </div>
 
