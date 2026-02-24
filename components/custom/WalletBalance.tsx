@@ -1,8 +1,27 @@
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { TrendingUp, TrendingDown, PieChart } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 
 const WalletBalance = ({ state = 'full' }: { state?: 'full' | 'empty' }) => {
     const isEmpty = state === 'empty';
+    const wallet = useWallet();
+    const { connection } = useConnection();
+    const [balance, setBalance] = useState(0);
+    console.log(connection)
+    useEffect(() => {
+        const getBalance = async () => {
+            if (wallet.connected && wallet.publicKey) {
+                console.log(wallet.publicKey?.toBase58());
+                const balance = await connection.getBalance(wallet.publicKey)
+                setBalance(balance / LAMPORTS_PER_SOL)
+            }
+        }
+
+        getBalance()
+
+    }, [wallet.connected]);
+
 
     const portfolio = isEmpty ? {
         totalValue: 0,
@@ -34,39 +53,11 @@ const WalletBalance = ({ state = 'full' }: { state?: 'full' | 'empty' }) => {
                         <p className="text-slate-400 text-sm font-medium mb-2">Total Net Worth</p>
                         <div className="flex flex-wrap items-center gap-3 md:gap-4">
                             <span className="text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tighter">
-                                ${portfolio.totalValue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                SOL {balance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                             </span>
-                            {!isEmpty && (
-                                <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border ${portfolio.changePercent >= 0
-                                    ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                                    : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
-                                    }`}>
-                                    {portfolio.changePercent >= 0 ? <TrendingUp className="w-3.5 h-3.5" /> : <TrendingDown className="w-3.5 h-3.5" />}
-                                    {portfolio.changePercent >= 0 ? '+' : ''}{portfolio.changePercent.toFixed(2)}%
-                                </div>
-                            )}
-                        </div>
-                        <p className="text-muted-foreground text-xs md:text-sm mt-3 flex items-center gap-2">
-                            {isEmpty ? (
-                                <span className="opacity-50 italic">No market data available for current selection</span>
-                            ) : (
-                                <>
-                                    <span className={portfolio.change24h >= 0 ? 'text-emerald-400' : 'text-rose-400'}>
-                                        {portfolio.change24h >= 0 ? '▲' : '▼'} ${Math.abs(portfolio.change24h).toFixed(2)}
-                                    </span>
-                                    <span className="opacity-50">vs last 24h</span>
-                                </>
-                            )}
-                        </p>
-                    </div>
 
-                    <div className="flex flex-wrap gap-2 text-wrap">
-                        {['1D', '1W', '1M', '1Y', 'ALL'].map((tab) => (
-                            <button key={tab} className={`px-2 md:px-3 py-1.5 rounded-lg text-[10px] md:text-xs font-bold transition-all ${tab === '1D' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:bg-white/5'
-                                }`}>
-                                {tab}
-                            </button>
-                        ))}
+                        </div>
+
                     </div>
                 </div>
 

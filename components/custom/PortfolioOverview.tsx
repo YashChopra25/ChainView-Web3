@@ -1,11 +1,15 @@
-import { Copy, Wallet } from 'lucide-react'
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletDisconnectButton } from '@solana/wallet-adapter-react-ui';
+import { Copy, LogOut, Wallet } from 'lucide-react'
 import React from 'react'
 
 const PortfolioOverview = ({ state = 'full' }: { state?: 'full' | 'empty' | 'disconnected' }) => {
-    const isDisconnected = state === 'disconnected';
+
+    const wallet = useWallet()
+    const isDisconnected = !wallet.connected
 
     return (
-        <header className="mb-0">
+        <header className="mb-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 md:gap-6">
                 <div className="text-center sm:text-left">
                     <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-2 text-glow">
@@ -26,19 +30,26 @@ const PortfolioOverview = ({ state = 'full' }: { state?: 'full' | 'empty' | 'dis
                         <p className="text-xs uppercase tracking-widest text-muted-foreground font-bold mb-1">Status</p>
                         <div className="flex items-center gap-2">
                             <span className="text-sm font-mono text-slate-200">
-                                {isDisconnected ? 'Disconnected' : 'yud3...678s'}
+                                {isDisconnected ? 'Disconnected' : <>   {wallet.publicKey?.toBase58().slice(0, 6) + '...' + wallet.publicKey?.toBase58().slice(-4)}</>}
+
                             </span>
                             {!isDisconnected && (
                                 <button className="text-muted-foreground hover:text-primary transition-colors">
-                                    <Copy className="w-3.5 h-3.5" />
+                                    <Copy className="w-3.5 h-3.5" onClick={() => navigator.clipboard.writeText(wallet.publicKey?.toBase58() || '')} />
                                 </button>
                             )}
                         </div>
                     </div>
-
-                    <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${isDisconnected ? 'bg-rose-500/10 text-rose-500' : 'bg-primary/10 text-primary'}`}>
-                        <Wallet className="w-5 h-5" />
-                    </div>
+                    {
+                        !isDisconnected ? (
+                            <div onClick={() => wallet.disconnect()} className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${isDisconnected ? 'bg-rose-500/10 text-rose-500' : 'bg-primary/10 text-primary'}`}>
+                                <LogOut className="w-5 h-5" />
+                            </div>
+                        ) :
+                            <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${isDisconnected ? 'bg-rose-500/10 text-rose-500' : 'bg-primary/10 text-primary'}`}>
+                                <Wallet className="w-5 h-5" />
+                            </div>
+                    }
                 </div>
             </div>
         </header>
