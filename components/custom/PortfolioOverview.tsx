@@ -30,7 +30,7 @@ const PortfolioOverview = ({ state = 'full' }: { state?: 'full' | 'empty' | 'dis
                 </div>
 
                 <div className="flex flex-wrap items-center justify-center sm:justify-end gap-4">
-                    <div className="flex items-center gap-2">
+                    {!isDisconnected && <div className="flex items-center gap-2">
                         <Select
                             value={network}
                             onValueChange={(value) => setNetwork(value as any)}
@@ -47,7 +47,7 @@ const PortfolioOverview = ({ state = 'full' }: { state?: 'full' | 'empty' | 'dis
                                 </SelectItem>
                             </SelectContent>
                         </Select>
-                    </div>
+                    </div>}
 
                     <div className="glass-card p-3! rounded-2xl! flex items-center justify-center sm:justify-start gap-4 group mx-auto sm:mx-0">
                         <div className="relative">
