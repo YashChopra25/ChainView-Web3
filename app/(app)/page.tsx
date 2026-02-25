@@ -73,7 +73,7 @@ const Home = () => {
           <>
             <WalletBalance />
             <TransactionHistory />
-            {/* <TokenHolding /> */}
+            <TokenHolding />
           </>
         )}
       </div>

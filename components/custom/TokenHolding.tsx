@@ -1,8 +1,32 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Inbox } from 'lucide-react'
+import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useNetwork } from '@/context/NetworkContext';
+import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
+import { PublicKey } from '@solana/web3.js';
+const TokenHolding = () => {
+    const isEmpty = true;
+    const wallet = useWallet()
+    const { connection } = useConnection()
+    const network = useNetwork()
+    useEffect(() => {
+        async function fetchSPLToken() {
+            try {
+                const publicKey = new PublicKey("EWGcY44T5cBH61LwX3oGRd9cPfg55auELFwKSAorbFQx")
+                const SPLtokens = await connection.getTokenAccountsByOwner(publicKey, {
+                    programId: TOKEN_PROGRAM_ID
+                })
+                console.log(SPLtokens)
+            } catch (error) {
+                console.error(error)
+            }
+        }
+        if (wallet.connected) {
+            fetchSPLToken()
+        }
+    }, [wallet.publicKey, wallet.connected, network])
 
-const TokenHolding = ({ state = 'full' }: { state?: 'full' | 'empty' }) => {
-    const isEmpty = state === 'empty';
+
 
     const tokens = isEmpty ? [] : [
         { symbol: 'ETH', name: 'Ethereum', amount: '2.4567', price: 1991.24, change: 3.42, value: 4892.18, logo: '🔷' },
