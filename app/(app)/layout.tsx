@@ -13,6 +13,7 @@ import { useMemo } from "react";
 
 
 import { NetworkProvider, useNetwork } from '@/context/NetworkContext';
+import { LedgerWalletAdapter, PhantomWalletAdapter, SolflareWalletAdapter } from '@solana/wallet-adapter-wallets';
 
 
 function SolanaProviders({ children }: { children: React.ReactNode }) {
@@ -20,10 +21,17 @@ function SolanaProviders({ children }: { children: React.ReactNode }) {
 
     // You can also provide a custom RPC endpoint.
     const endpoint = useMemo(() => clusterApiUrl(network), [network]);
-
+    const wallets = useMemo(
+        () => [
+            new PhantomWalletAdapter(),
+            new SolflareWalletAdapter(),
+            new LedgerWalletAdapter(),
+        ],
+        [network]
+    );
     return (
         <ConnectionProvider endpoint={endpoint}>
-            <WalletProvider wallets={[]} autoConnect>
+            <WalletProvider wallets={wallets} autoConnect>
                 <WalletModalProvider>
                     {children}
                 </WalletModalProvider>

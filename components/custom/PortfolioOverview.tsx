@@ -11,7 +11,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 
-const PortfolioOverview = ({ state = 'full' }: { state?: 'full' | 'empty' | 'disconnected' }) => {
+const PortfolioOverview = () => {
 
     const wallet = useWallet()
     const { network, setNetwork } = useNetwork();

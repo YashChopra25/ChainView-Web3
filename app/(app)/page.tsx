@@ -16,14 +16,13 @@ import {
 } from "@/components/ui/dialog"
 
 const Home = () => {
-  const [appState] = useState<'full' | 'empty' | 'disconnected'>('full');
   const [isWalletDialogOpen, setIsWalletDialogOpen] = useState(false);
   const wallet = useWallet()
 
   return (
     <div className='min-h-screen flex flex-col gap-6 bg-background text-foreground py-6 px-4 md:py-10 md:px-8 relative overflow-hidden'>
       <div className="max-w-7xl mx-auto w-full space-y-6 md:space-y-8 z-10">
-        <PortfolioOverview state={appState} />
+        <PortfolioOverview />
 
         {!wallet.connected ? (
           <div className="glass-card flex flex-col items-center justify-center py-20 text-center animate-in fade-in zoom-in duration-500">
@@ -72,9 +71,9 @@ const Home = () => {
           </div>
         ) : (
           <>
-            <WalletBalance state={'full'} />
-            <TransactionHistory state={'full'} />
-            <TokenHolding state={'full'} />
+            <WalletBalance />
+            <TransactionHistory />
+            {/* <TokenHolding /> */}
           </>
         )}
       </div>
