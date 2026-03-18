@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/select"
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { useNetwork } from '@/context/NetworkContext';
+import Link from 'next/link';
 
 interface Transaction {
     blockTime: number | null;
@@ -299,7 +300,7 @@ const TransactionHistory = () => {
                                                     Explore Transaction
                                                 </DropdownMenuLabel>
                                                 <DropdownMenuItem asChild>
-                                                    <a
+                                                    <Link
                                                         href={`https://solscan.io/tx/${tx.signature}?cluster=${network}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
@@ -307,30 +308,30 @@ const TransactionHistory = () => {
                                                     >
                                                         Solscan
                                                         <ArrowUpRight className="w-4 h-4 opacity-40 group-hover/link:opacity-100 transition-all group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-                                                    </a>
+                                                    </Link>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem asChild>
-                                                    <a
-                                                        href={`https://explorer.solana.com/tx/${tx.signature}`}
+                                                    <Link
+                                                        href={`https://explorer.solana.com/tx/${tx.signature}?cluster=${network}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="flex items-center justify-between w-full px-3 py-2.5 rounded-xl hover:bg-white/5 text-sm text-slate-200 transition-colors group/link"
                                                     >
                                                         Solana Explorer
                                                         <ArrowUpRight className="w-4 h-4 opacity-40 group-hover/link:opacity-100 transition-all group-hover/link:translate-x-0.5 group-hover/link:-translate-y-0.5" />
-                                                    </a>
+                                                    </Link>
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
 
-                                        <a
-                                            href={`https://solscan.io/tx/${tx.signature}`}
+                                        <Link
+                                            href={`https://solscan.io/tx/${tx.signature}?cluster=${network}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="p-2.5 bg-primary/10 hover:bg-primary/20 border border-primary/20 rounded-xl text-primary transition-all hidden sm:block"
                                         >
                                             <ExternalLink className="w-4 h-4" />
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>

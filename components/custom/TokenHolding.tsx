@@ -1,52 +1,73 @@
-import React, { useEffect } from 'react'
-import { Inbox } from 'lucide-react'
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
-import { useNetwork } from '@/context/NetworkContext';
-import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
-import { PublicKey } from '@solana/web3.js';
+import React, { useEffect, useState } from 'react'
+import { Inbox, Loader2, Search } from 'lucide-react'
+import { useWallet } from '@solana/wallet-adapter-react';
+import { useTokens } from '@/context/TokenContext';
+
 const TokenHolding = () => {
-    const isEmpty = true;
-    const wallet = useWallet()
-    const { connection } = useConnection()
-    const network = useNetwork()
+    const [pageIndex, setPageIndex] = useState(0);
+    const [limit, setLimit] = useState(10);
+    const [searchQuery, setSearchQuery] = useState('');
+
+    const wallet = useWallet();
+    const { tokens, isLoadingTokens: isLoading } = useTokens();
+
+    const isEmpty = tokens.length === 0 && !isLoading;
+
     useEffect(() => {
-        async function fetchSPLToken() {
-            try {
-                const publicKey = new PublicKey("EWGcY44T5cBH61LwX3oGRd9cPfg55auELFwKSAorbFQx")
-                const SPLtokens = await connection.getTokenAccountsByOwner(publicKey, {
-                    programId: TOKEN_PROGRAM_ID
-                })
-                console.log(SPLtokens)
-            } catch (error) {
-                console.error(error)
-            }
+        setPageIndex(0);
+    }, [tokens]);
+
+    useEffect(() => {
+        setPageIndex(0);
+    }, [searchQuery]);
+
+    const filteredTokens = tokens.filter(token =>
+        token.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        token.symbol?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    const handleNextPage = () => {
+        const totalPages = Math.ceil(filteredTokens.length / limit);
+        if (pageIndex < totalPages - 1) {
+            setPageIndex(prev => prev + 1);
         }
-        if (wallet.connected) {
-            fetchSPLToken()
+    };
+
+    const handlePrevPage = () => {
+        if (pageIndex > 0) {
+            setPageIndex(prev => prev - 1);
         }
-    }, [wallet.publicKey, wallet.connected, network])
+    };
 
-
-
-    const tokens = isEmpty ? [] : [
-        { symbol: 'ETH', name: 'Ethereum', amount: '2.4567', price: 1991.24, change: 3.42, value: 4892.18, logo: '🔷' },
-        { symbol: 'USDC', name: 'USD Coin', amount: '5000.00', price: 1.00, change: 0.01, value: 5000.00, logo: '💵' },
-        { symbol: 'UNI', name: 'Uniswap', amount: '150.00', price: 7.25, change: -2.18, value: 1087.50, logo: '🦄' },
-        { symbol: 'LINK', name: 'Chainlink', amount: '300.00', price: 18.45, change: 5.67, value: 5535.00, logo: '🔗' },
-        { symbol: 'AAVE', name: 'Aave', amount: '8.50', price: 85.40, change: -1.23, value: 725.90, logo: '👻' },
-    ];
+    const paginatedTokens = filteredTokens.slice(
+        pageIndex * limit,
+        (pageIndex + 1) * limit
+    );
 
     return (
         <div className="glass-card overflow-hidden">
-            <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-6 mb-8 p-1">
                 <div>
                     <h2 className="text-xl font-bold text-white mb-1">Asset Allocation</h2>
                     <p className="text-muted-foreground text-sm font-medium">Distribution of your holdings</p>
                 </div>
-                {!isEmpty && <button className="text-primary text-sm font-bold hover:underline">Manage Assets</button>}
+                {!isEmpty && !isLoading && (
+                    <div className="flex flex-col md:flex-row items-center gap-3 w-full xl:w-auto">
+                        <div className="relative group/search w-full md:w-72">
+                            <Search className="w-4 h-4 text-slate-500 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within/search:text-primary transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="Search Asset or Symbol..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full pl-10 pr-4 py-2 bg-slate-900/50 border border-white/5 rounded-xl text-slate-200 placeholder-slate-600 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all text-xs font-medium"
+                            />
+                        </div>
+                    </div>
+                )}
             </div>
 
-            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+            <div className=" pe-4 overflow-x-auto min-h-[400px] max-h-[500px] overflow-y-scroll custom-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
                 <table className="w-full min-w-[600px] md:min-w-full">
                     <thead>
                         <tr className="border-b border-white/5">
@@ -58,7 +79,17 @@ const TokenHolding = () => {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-white/3">
-                        {isEmpty ? (
+                        {isLoading ? (
+                            <tr>
+                                <td colSpan={5} className="py-20 text-center">
+                                    <div className="flex flex-col items-center justify-center opacity-70">
+                                        <Loader2 className="w-8 h-8 text-primary/50 animate-spin mb-4" />
+                                        <p className="text-slate-200 font-bold">Scanning Wallet...</p>
+                                        <p className="text-slate-500 text-xs mt-1">Retrieving your token balances and metadata</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        ) : isEmpty ? (
                             <tr>
                                 <td colSpan={5} className="py-20 text-center">
                                     <div className="flex flex-col items-center justify-center opacity-40">
@@ -70,13 +101,29 @@ const TokenHolding = () => {
                                     </div>
                                 </td>
                             </tr>
+                        ) : paginatedTokens.length === 0 ? (
+                            <tr>
+                                <td colSpan={5} className="py-20 text-center">
+                                    <div className="flex flex-col items-center justify-center opacity-40">
+                                        <div className="w-16 h-16 bg-slate-900/50 rounded-3xl flex items-center justify-center mb-6 border border-white/5">
+                                            <Search className="w-8 h-8 text-slate-500" />
+                                        </div>
+                                        <p className="text-slate-200 font-bold">No matching assets</p>
+                                        <p className="text-slate-500 text-xs mt-1">Try adjusting your search query</p>
+                                    </div>
+                                </td>
+                            </tr>
                         ) : (
-                            tokens.map((token) => (
-                                <tr key={token.symbol} className="group hover:bg-white/2 transition-colors">
+                            paginatedTokens.map((token, index) => (
+                                <tr key={`${token.symbol}-${index}`} className="group hover:bg-white/2 transition-colors">
                                     <td className="py-4 md:py-5">
                                         <div className="flex items-center gap-3 md:gap-4">
-                                            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white/5 rounded-lg md:rounded-xl text-lg md:text-xl group-hover:scale-110 transition-transform grow-0 shrink-0">
-                                                {token.logo}
+                                            <div className="w-8 h-8 md:w-10 md:h-10 flex items-center justify-center bg-white/5 rounded-lg md:rounded-xl text-lg md:text-xl group-hover:scale-110 transition-transform grow-0 shrink-0 overflow-hidden">
+                                                {token.logo ? (
+                                                    <img src={token.logo} alt={token.symbol} className="w-full h-full object-cover" />
+                                                ) : (
+                                                    '🪙'
+                                                )}
                                             </div>
                                             <div>
                                                 <p className="text-slate-100 font-bold text-sm md:text-base">{token.symbol}</p>
@@ -89,7 +136,7 @@ const TokenHolding = () => {
                                     </td>
                                     <td className="text-right py-4 md:py-5 hidden sm:table-cell">
                                         <p className="text-slate-200 font-bold text-xs md:text-sm">
-                                            ${token.price.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            ${token.price.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 6 })}
                                         </p>
                                     </td>
                                     <td className="text-right py-4 md:py-5">
@@ -102,7 +149,7 @@ const TokenHolding = () => {
                                     </td>
                                     <td className="text-right py-4 md:py-5">
                                         <p className="text-white font-black text-sm md:text-base">
-                                            ${token.value.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                                            ${token.value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                                         </p>
                                     </td>
                                 </tr>
@@ -111,9 +158,26 @@ const TokenHolding = () => {
                     </tbody>
                 </table>
             </div>
-            {!isEmpty && (
-                <div className="mt-6 pt-6 border-t border-white/5 text-center">
-                    <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em]">Institutional Asset Discovery Active</p>
+
+            {!isEmpty && !isLoading && filteredTokens.length > 0 && (
+                <div className="mt-8 flex items-center justify-between bg-white/2 border border-white/5 p-2 rounded-2xl">
+                    <button
+                        onClick={handlePrevPage}
+                        disabled={pageIndex === 0 || isLoading}
+                        className="px-6 py-2.5 bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:hover:bg-white/5 text-slate-300 font-bold text-xs rounded-xl border border-white/5 transition-all duration-200"
+                    >
+                        Previous
+                    </button>
+                    <div className="text-slate-500 text-[10px] font-black uppercase tracking-widest text-center">
+                        Page {pageIndex + 1} of {Math.max(1, Math.ceil(filteredTokens.length / limit))}
+                    </div>
+                    <button
+                        onClick={handleNextPage}
+                        disabled={pageIndex >= Math.ceil(filteredTokens.length / limit) - 1 || isLoading}
+                        className="px-6 py-2.5 bg-primary/10 hover:bg-primary/20 disabled:opacity-30 disabled:hover:bg-primary/10 text-primary font-bold text-xs rounded-xl border border-primary/20 transition-all duration-200"
+                    >
+                        Next
+                    </button>
                 </div>
             )}
         </div>

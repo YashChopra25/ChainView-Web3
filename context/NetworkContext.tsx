@@ -13,7 +13,7 @@ interface NetworkContextType {
 const NetworkContext = createContext<NetworkContextType | undefined>(undefined);
 
 export function NetworkProvider({ children }: { children: ReactNode }) {
-    const [network, setNetwork] = useState<Network>(WalletAdapterNetwork.Devnet);
+    const [network, setNetwork] = useState<Network>(WalletAdapterNetwork.Mainnet);
 
     return (
         <NetworkContext.Provider value={{ network, setNetwork }}>

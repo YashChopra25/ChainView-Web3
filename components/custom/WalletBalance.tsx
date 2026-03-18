@@ -1,8 +1,9 @@
 import { useConnection, useWallet } from '@solana/wallet-adapter-react';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
-import { AlertCircle, PieChart, RefreshCw } from 'lucide-react'
+import { AlertCircle, RefreshCw } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { Skeleton } from '../ui/skeleton';
+import { useTokens } from '@/context/TokenContext';
 
 const WalletBalance = () => {
     const wallet = useWallet();
@@ -10,6 +11,8 @@ const WalletBalance = () => {
     const [balance, setBalance] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+
+    const { topToken, isLoadingTokens: isLoadingTopToken } = useTokens();
 
     const getBalance = async () => {
         if (wallet.connected && wallet.publicKey) {
@@ -20,7 +23,6 @@ const WalletBalance = () => {
                 setBalance(balance / LAMPORTS_PER_SOL)
             } catch (err) {
                 console.error('Error fetching balance:', err);
-                // setError('Failed to fetch balance. Please try again.');
                 setBalance(0)
             } finally {
                 setIsLoading(false);
@@ -29,7 +31,11 @@ const WalletBalance = () => {
     }
 
     useEffect(() => {
-        getBalance()
+        if (wallet.connected && wallet.publicKey) {
+            getBalance();
+        } else {
+            setBalance(0);
+        }
     }, [wallet.connected, wallet.publicKey, connection]);
 
     return (
@@ -81,13 +87,37 @@ const WalletBalance = () => {
                 </h3>
                 <div className="flex-1 flex flex-col justify-center">
                     {wallet.connected ? (
-                        <div className="p-8 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center group transition-colors hover:border-white/20">
-                            <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl mb-4 text-slate-500 group-hover:scale-110 transition-transform">
-                                ?
+                        isLoadingTopToken ? (
+                            <div className="p-8 border border-white/5 bg-white/2 rounded-2xl flex flex-col items-center justify-center text-center">
+                                <RefreshCw className="w-6 h-6 text-primary animate-spin mb-3" />
+                                <p className="text-slate-400 font-bold text-xs uppercase tracking-widest">Discovering...</p>
                             </div>
-                            <p className="text-slate-200 font-bold mb-1">No Assets Discovered</p>
-                            <p className="text-slate-500 text-[10px] font-medium leading-relaxed">Top performing assets will appear here once verified</p>
-                        </div>
+                        ) : topToken ? (
+                            <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group/asset">
+                                <div className="w-12 h-12 rounded-xl flex items-center justify-center text-2xl shadow-lg group-hover/asset:scale-110 transition-transform overflow-hidden bg-white/10">
+                                    {topToken.logo ? (
+                                        <img src={topToken.logo} alt={topToken.symbol} className="w-full h-full object-cover" />
+                                    ) : (
+                                        '🪙'
+                                    )}
+                                </div>
+                                <div className="flex-1">
+                                    <p className="text-white font-bold">{topToken.symbol}</p>
+                                    <p className="text-slate-500 text-xs font-medium tracking-tight truncate max-w-[120px]">{topToken.name}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-white font-bold">{topToken.amount}</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="p-8 border border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-center group transition-colors hover:border-white/20">
+                                <div className="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center text-xl mb-4 text-slate-500 group-hover:scale-110 transition-transform">
+                                    ?
+                                </div>
+                                <p className="text-slate-200 font-bold mb-1">No Assets Discovered</p>
+                                <p className="text-slate-500 text-[10px] font-medium leading-relaxed">Top performing assets will appear here once verified</p>
+                            </div>
+                        )
                     ) : (
                         <div className="flex items-center gap-4 p-4 bg-white/5 rounded-2xl border border-white/5 hover:bg-white/10 transition-colors cursor-pointer group/asset">
                             <div className="w-12 h-12 rounded-xl bg-linear-to-br from-blue-500 to-purple-600 flex items-center justify-center text-2xl shadow-lg group-hover/asset:scale-110 transition-transform">
@@ -98,7 +128,7 @@ const WalletBalance = () => {
                                 <p className="text-slate-500 text-xs font-medium tracking-tight">ETH / Mainnet</p>
                             </div>
                             <div className="text-right">
-                                <p className="text-white font-bold">{balance.toLocaleString()}</p>
+                                <p className="text-white font-bold">2.4567</p>
                                 <p className="text-emerald-400 text-xs font-bold">$4,892.18</p>
                             </div>
                         </div>
