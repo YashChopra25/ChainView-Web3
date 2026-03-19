@@ -1,7 +1,8 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useConnection } from '@solana/wallet-adapter-react';
+import { useAppWallet } from '@/hooks/useAppWallet';
 import { TOKEN_PROGRAM_ID, TOKEN_2022_PROGRAM_ID } from "@solana/spl-token";
 import { PublicKey } from '@solana/web3.js';
 import { Metaplex } from "@metaplex-foundation/js";
@@ -19,7 +20,7 @@ export function TokenProvider({ children }: { children: ReactNode }) {
     const [topToken, setTopToken] = useState<any>(null);
     const [isLoadingTokens, setIsLoadingTokens] = useState(false);
 
-    const wallet = useWallet();
+    const wallet = useAppWallet();
     const { connection } = useConnection();
 
     useEffect(() => {

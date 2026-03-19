@@ -8,15 +8,18 @@ type Network = WalletAdapterNetwork.Mainnet | WalletAdapterNetwork.Devnet;
 interface NetworkContextType {
     network: Network;
     setNetwork: (network: Network) => void;
+    isTestMode: boolean;
+    setIsTestMode: (val: boolean) => void;
 }
 
 const NetworkContext = createContext<NetworkContextType | undefined>(undefined);
 
 export function NetworkProvider({ children }: { children: ReactNode }) {
     const [network, setNetwork] = useState<Network>(WalletAdapterNetwork.Mainnet);
+    const [isTestMode, setIsTestMode] = useState<boolean>(false);
 
     return (
-        <NetworkContext.Provider value={{ network, setNetwork }}>
+        <NetworkContext.Provider value={{ network, setNetwork, isTestMode, setIsTestMode }}>
             {children}
         </NetworkContext.Provider>
     );

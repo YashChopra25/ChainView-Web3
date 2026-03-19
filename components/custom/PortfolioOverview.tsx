@@ -1,6 +1,6 @@
 import { useNetwork } from '@/context/NetworkContext';
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useAppWallet } from '@/hooks/useAppWallet';
 import { Copy, LogOut, Wallet } from 'lucide-react'
 import React from 'react'
 import {
@@ -13,9 +13,17 @@ import {
 
 const PortfolioOverview = () => {
 
-    const wallet = useWallet()
-    const { network, setNetwork } = useNetwork();
+    const wallet = useAppWallet();
+    const { network, setNetwork, isTestMode, setIsTestMode } = useNetwork();
     const isDisconnected = !wallet.connected
+
+    const handleDisconnect = () => {
+        if (isTestMode) {
+            setIsTestMode(false);
+        } else {
+            wallet.disconnect();
+        }
+    };
 
     return (
         <header className="mb-4">
@@ -71,9 +79,9 @@ const PortfolioOverview = () => {
                         </div>
                         {
                             !isDisconnected ? (
-                                <div onClick={() => wallet.disconnect()} className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${isDisconnected ? 'bg-rose-500/10 text-rose-500' : 'bg-primary/10 text-primary'}`}>
+                                <button onClick={handleDisconnect} className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${isDisconnected ? 'bg-rose-500/10 text-rose-500' : 'bg-primary/10 text-primary'}`}>
                                     <LogOut className="w-5 h-5" />
-                                </div>
+                                </button>
                             ) :
                                 <div className={`p-2 rounded-xl group-hover:scale-110 transition-transform ${isDisconnected ? 'bg-rose-500/10 text-rose-500' : 'bg-primary/10 text-primary'}`}>
                                     <Wallet className="w-5 h-5" />

@@ -28,7 +28,8 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select"
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useConnection } from '@solana/wallet-adapter-react';
+import { useAppWallet } from '@/hooks/useAppWallet';
 import { useNetwork } from '@/context/NetworkContext';
 import Link from 'next/link';
 
@@ -50,7 +51,7 @@ const TransactionHistory = () => {
     const [pageIndex, setPageIndex] = useState(0);
     const [error, setError] = useState<string | null>(null);
 
-    const wallet = useWallet()
+    const wallet = useAppWallet()
     const { connection } = useConnection()
     const { network } = useNetwork()
 

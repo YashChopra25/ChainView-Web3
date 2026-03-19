@@ -1,4 +1,5 @@
-import { useConnection, useWallet } from '@solana/wallet-adapter-react';
+import { useConnection } from '@solana/wallet-adapter-react';
+import { useAppWallet } from '@/hooks/useAppWallet';
 import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { AlertCircle, RefreshCw } from 'lucide-react'
 import { useEffect, useState } from 'react'
@@ -6,7 +7,7 @@ import { Skeleton } from '../ui/skeleton';
 import { useTokens } from '@/context/TokenContext';
 
 const WalletBalance = () => {
-    const wallet = useWallet();
+    const wallet = useAppWallet();
     const { connection } = useConnection();
     const [balance, setBalance] = useState(0);
     const [isLoading, setIsLoading] = useState(false);
